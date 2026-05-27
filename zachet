@@ -1,0 +1,108 @@
+def print_board(board):
+    size = len(board)
+    print("\n   " + " ".join(str(i + 1) for i in range(size)))
+    for i in range(size):
+        print(f"{i + 1} | " + " ".join(board[i]) + " |")
+    print()
+
+
+def check_win(board, player):
+    size = len(board)
+
+    for row in board:
+        if all(cell == player for cell in row):
+            return True
+
+    for col in range(size):
+        if all(board[row][col] == player for row in range(size)):
+            return True
+
+    if all(board[i][i] == player for i in range(size)):
+        return True
+
+    if all(board[i][size - 1 - i] == player for i in range(size)):
+        return True
+
+    return False
+
+
+def check_draw(board):
+    return all(cell != '.' for row in board for cell in row)
+
+
+def get_field_size():
+    while True:
+        size_input = input("Выберите размер поля (3 или 4): ").strip()
+        if size_input in ['3', '4']:
+            return int(size_input)
+        print("Ошибка: выберите 3 или 4.")
+
+
+def main():
+    print("Команды: start - начать, restart - заново, exit - выйти.")
+    print("Ход: строка колонка (например: 1 2)\n")
+
+    board = None
+    size = 0
+    current_player = 'X'
+    game_active = False
+
+    while True:
+        if game_active:
+            prompt = f"[{current_player}] Ваш ход: "
+        else:
+            prompt = "Введите команду: "
+
+        user_input = input(prompt).strip().lower()
+
+        if user_input == 'exit':
+            print("Выход из игры.")
+            break
+
+        elif user_input in ['start', 'restart']:
+            size = get_field_size()
+            board = [['.' for _ in range(size)] for _ in range(size)]
+            current_player = 'X'
+            game_active = True
+            print(f"\nИгра начата. Поле {size}x{size}.")
+            print_board(board)
+            continue
+
+        if not game_active:
+            print("Игра не начата. Введите 'start'.")
+            continue
+
+        coordinates = user_input.split()
+        if len(coordinates) == 2:
+            try:
+                row = int(coordinates[0]) - 1
+                col = int(coordinates[1]) - 1
+
+                if not (0 <= row < size and 0 <= col < size):
+                    print(f"Ошибка: координаты вне диапазона 1-{size}!")
+                    continue
+
+                if board[row][col] != '.':
+                    print("Ошибка: клетка занята!")
+                    continue
+
+                board[row][col] = current_player
+                print_board(board)
+
+                if check_win(board, current_player):
+                    print(f"Игрок '{current_player}' победил!")
+                    game_active = False
+                elif check_draw(board):
+                    print("Ничья!")
+                    game_active = False
+                else:
+                    current_player = 'O' if current_player == 'X' else 'X'
+
+            except ValueError:
+                print("Ошибка: введите два числа через пробел.")
+        else:
+            print("Ошибка: неизвестная команда.")
+
+
+if __name__ == "__main__":
+    main()
